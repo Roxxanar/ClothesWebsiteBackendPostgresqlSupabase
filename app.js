@@ -56,7 +56,7 @@ app.get('/allclothesnew', async (req, res) => {
     const { data, error } = await supabase
       .from('allclothes')
       .select(`
-        ID: AllClothesID,
+        AllClothesID:ID,
         IsNew,
         IsAtSale,
         ClothingID (

@@ -5,7 +5,7 @@ const { createClient } = require('@supabase/supabase-js');
 
 // Express app setup
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3200;
 
 // Supabase configuration
 const supabaseUrl = 'https://zyldhfgomockanyaptwi.supabase.co';
@@ -105,6 +105,79 @@ app.get('/allclothesnew', async (req, res) => {
     });
   }
 });
+
+
+app.post('/signup', async (req, res) => {
+  const { email, password } = req.body;
+
+  try {
+    const { data: existingUsers, error: checkError } = await supabase
+      .from('users')
+      .select('*')
+      .eq('E-mail', email);
+
+    if (checkError) throw checkError;
+    if (existingUsers.length > 0) {
+      return res.status(400).json({ error: 'Email already exists' });
+    }
+
+    const { data, error: insertError } = await supabase
+      .from('users')
+      .insert([{ 'E-mail': email, 'Password': password }]);
+
+    if (insertError) throw insertError;
+
+    res.status(201).json({ message: 'User registered successfully' });
+  } catch (error) {
+    console.error('Signup error:', error.message);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+
+
+app.post('/login', async (req, res) => {
+
+  const email = req.body.email?.trim();
+const password = req.body.password?.trim();
+
+  console.log('Trying to login with:', email, password);
+  
+
+  try {
+    // Check if user exists with correct password
+    const { data: users, error } = await supabase
+    .from('users')
+    .select('"E-mail", "Password", "First Name"')
+    .eq('E-mail', email)
+    .eq('Password', password);
+
+
+       console.log('Query result:', users);
+
+    if (error) throw error;
+
+    if (users.length === 0) {
+      return res.status(401).json({ error: 'Invalid credentials' });
+    }
+
+    const user = users[0];
+
+    // Simulated token (you can replace with JWT if needed)
+    const token = 123;
+
+
+    res.status(200).json({
+      message: 'Login successful',
+      token,
+      username: user['First Name'] || email // default fallback
+    });
+  } catch (error) {
+    console.error('Login error:', error.message);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
 
 
 

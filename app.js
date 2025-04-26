@@ -229,6 +229,46 @@ app.post('/usersubscribed', async (req, res) => {
 
 
 
+app.post('/auth/google', async (req, res) => {
+  const { email } = req.body;
+
+  if (!email) {
+    return res.status(400).json({ error: 'Email is required' });
+  }
+
+  try {
+    // 1. Caută dacă există deja utilizatorul
+    const { data: existingUsers, error: fetchError } = await supabase
+      .from('users')
+      .select('*')
+      .eq('E-mail', email);
+
+    if (fetchError) throw fetchError;
+
+    if (existingUsers.length > 0) {
+      // Dacă utilizatorul există deja
+      return res.status(200).json({ message: 'User already exists', user: existingUsers[0] });
+    }
+
+    // 2. Dacă utilizatorul NU există, îl adaugă
+    const { data, error: insertError } = await supabase
+      .from('users')
+      .insert([{ 'E-mail': email }]);
+
+    if (insertError) throw insertError;
+
+    return res.status(201).json({ message: 'User created successfully', user: data[0] });
+
+  } catch (error) {
+    console.error('Google auth error:', error.message);
+    return res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+
+
+
+
 
 
 // Error handling middleware

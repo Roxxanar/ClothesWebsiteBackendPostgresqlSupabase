@@ -240,7 +240,7 @@ app.post('/auth/google', async (req, res) => {
     // 1. Caută dacă există deja utilizatorul
     const { data: existingUsers, error: fetchError } = await supabase
       .from('users')
-      .select('*')
+      .select('ID, E-mail, "First Name", "Last Name", IsSubscribed')
       .eq('E-mail', email);
 
     if (fetchError) throw fetchError;
